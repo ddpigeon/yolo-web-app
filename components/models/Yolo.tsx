@@ -13,7 +13,8 @@ const RES_TO_MODEL: [number[], string][] = [
   //[[320, 320], "yolov7-tiny_320x320.onnx"],
   //[[640, 640], "yolov7-tiny_640x640.onnx"],
   [[256, 256], "yolov8-26_256x256.onnx"],
-  [[192, 192], "yolov8-26_192x192.onnx"]
+  [[192, 192], "yolov8-26_192x192.onnx"],
+  [[128, 128], "yolov8-26_128x128.onnx"]
 ];
 
 const Yolo = (props: any) => {
