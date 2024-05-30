@@ -9,10 +9,11 @@ import { useEffect } from "react";
 import { runModelUtils } from "../../utils";
 
 const RES_TO_MODEL: [number[], string][] = [
-  [[256,256], "yolov7-tiny_256x256.onnx"],
-  [[320, 320], "yolov7-tiny_320x320.onnx"],
-  [[640, 640], "yolov7-tiny_640x640.onnx"],
-  [[256, 256], "best.onnx"],
+  //[[256,256], "yolov7-tiny_256x256.onnx"],
+  //[[320, 320], "yolov7-tiny_320x320.onnx"],
+  //[[640, 640], "yolov7-tiny_640x640.onnx"],
+  [[256, 256], "yolov8-26_256x256.onnx"],
+  [[192, 192], "yolov8-26_192x192.onnx"]
 ];
 
 const Yolo = (props: any) => {
@@ -153,10 +154,12 @@ const Yolo = (props: any) => {
       //);
 
       let output = tensor.data;
-      //console.log(output);
+      let preds = tensor.dims[2];
+      console.log(output);
       const proc_output = [];
     
-      // tensor is 1 x 83 x 1344
+      // tensor is 1 x 83 x 1344 for 256x256
+      // tensor is 1 x 83 x 756 for 192x192
       //console.log(proc_output);
       let [x0, y0, x1, y1] = [0, 0, 0, 0];
       let [a, b, c, d] = [0, 0, 0, 0];
@@ -169,16 +172,15 @@ const Yolo = (props: any) => {
       ctx.fillStyle = "green";
       let max_sure_index = -1;
       let max_sure_conf = 0;
-      for (let i = 0; i < 1344; i += 1) {
+      for (let i = 0; i < preds; i += 1) {
         x0 = output[i];
-        x1 = output[1344 + i];
-        y0 = output[2688 + i];
-        y1 = output[4032 + i];
+        x1 = output[preds + i];
+        y0 = output[2 * preds + i];
+        y1 = output[3 * preds + i];
         [a, b, c, d] = [x0 - x1 / 2, y0 - y1 / 2, x1, y1].map((x: any) => round(x));
 
         let cur_conf = 0;
-        let flag = 1;
-        cur_conf = output[5376 + i];
+        cur_conf = output[4 * preds + i];
         if (cur_conf > max_sure_conf) {
           max_sure_conf = cur_conf;
           max_sure_index = i;
@@ -197,9 +199,9 @@ const Yolo = (props: any) => {
       }
       console.log(max_sure_conf, max_sure_index);
       x0 = output[max_sure_index] * dx;
-      x1 = output[1344 + max_sure_index] * dx;
-      y0 = output[2688 + max_sure_index] * dy;
-      y1 = output[4032 + max_sure_index] * dy;
+      x1 = output[preds + max_sure_index] * dx;
+      y0 = output[2 * preds + max_sure_index] * dy;
+      y1 = output[3 * preds + max_sure_index] * dy;
       [a, b, c, d] = [x0 - x1 / 2, y0 - y1 / 2, x1, y1].map((x: any) => round(x));
       //ctx.strokeRect(a, b, c, d);
       console.log(a, b, c, d);
